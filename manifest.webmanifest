@@ -1,0 +1,13 @@
+{
+  "name": "HyllySanelu",
+  "short_name": "HyllySanelu",
+  "description": "Offline-toiminen video- ja sanelupohjainen hyllytarkastus.",
+  "display": "standalone",
+  "start_url": "./",
+  "scope": "./",
+  "theme_color": "#0c3b2e",
+  "background_color": "#f7f5ef",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

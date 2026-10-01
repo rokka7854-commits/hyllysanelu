@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0c3b2e" />
+  <meta name="description" content="Offline-toiminen video- ja sanelupohjainen hyllytarkastus." />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>HyllySanelu</title>
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">OFFLINE-TARKASTUS</p>
+      <h1>HyllySanelu</h1>
+    </div>
+    <div id="saveState" class="save-state">Tallennettu paikallisesti</div>
+  </header>
+
+  <main>
+    <section id="homeView" class="view active" aria-labelledby="homeTitle">
+      <div class="hero card">
+        <p class="eyebrow">VIDEO + OHJATTU SANELU</p>
+        <h2 id="homeTitle">Kirjaa havainto katsomatta lomakkeeseen.</h2>
+        <p>Aloita videoleike paikkatunnuksesta. Sovellus ohjaa tarvittavat tiedot yksi kerrallaan ja muodostaa tarkastajan hyväksymän havaintorivin.</p>
+        <button id="startObservation" class="button primary large">Aloita ohjattu videohavainto</button>
+      </div>
+
+      <section class="card" aria-labelledby="inspectionTitle">
+        <div class="section-title-row">
+          <div>
+            <p class="eyebrow">NYKYINEN TARKASTUS</p>
+            <h2 id="inspectionTitle" data-inspection-title>Ei nimettyä tarkastusta</h2>
+          </div>
+          <button id="editInspection" class="button secondary">Tarkastuksen tiedot</button>
+        </div>
+        <dl id="inspectionMeta" class="meta-list"></dl>
+      </section>
+
+      <section class="card" aria-labelledby="observationsTitle">
+        <div class="section-title-row">
+          <div>
+            <p class="eyebrow">HAVAINNOT</p>
+            <h2 id="observationsTitle">Havaintolista</h2>
+          </div>
+          <span id="observationCount" class="count-badge">0</span>
+        </div>
+        <div id="observationList" class="observation-list empty-state">Ei havaintoja vielä.</div>
+      </section>
+
+      <section class="actions-grid" aria-label="Raportointi ja tarkastuksen hallinta">
+        <button id="exportCsv" class="button secondary">Vie Exceliin (CSV)</button>
+        <button id="printReport" class="button secondary">Tulosta / tallenna PDF</button>
+        <button id="shareReport" class="button secondary">Jaa yhteenveto</button>
+        <button id="newInspection" class="button danger">Aloita uusi tarkastus</button>
+      </section>
+    </section>
+
+    <section id="inspectionView" class="view" aria-labelledby="inspectionFormTitle">
+      <button class="back-link" data-go="homeView">← Takaisin</button>
+      <div class="card form-card">
+        <p class="eyebrow">TARKASTUKSEN TIEDOT</p>
+        <h2 id="inspectionFormTitle">Tarkastuksen perustiedot</h2>
+        <p class="muted">Tiedot tallentuvat vain tälle laitteelle.</p>
+        <form id="inspectionForm" class="form-grid">
+          <label>Kohde / asiakas<input name="site" autocomplete="organization" placeholder="Esim. Asiakas Oy, Vantaa" /></label>
+          <label>Tarkastaja<input name="inspector" autocomplete="name" placeholder="Nimi" /></label>
+          <label>Tarkastuspäivä<input name="date" type="date" /></label>
+          <label>Lisätiedot<textarea name="notes" rows="3" placeholder="Esim. tarkastusalue tai toimeksianto"></textarea></label>
+          <button class="button primary" type="submit">Tallenna tiedot</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="guidedView" class="view" aria-live="polite" aria-labelledby="guidedTitle">
+      <div class="guided-topbar">
+        <button id="cancelGuided" class="button text-button">Keskeytä</button>
+        <span id="stepCounter" class="step-counter">1 / 8</span>
+      </div>
+      <div class="progress-track"><div id="progressBar" class="progress-bar"></div></div>
+      <div class="card prompt-card">
+        <p id="stepLabel" class="eyebrow">VAIHE 1</p>
+        <h2 id="guidedTitle">Näytä varastopaikan tunnus</h2>
+        <p id="promptText">Suuntaa kamera QR- tai viivakoodiin. Voit myös kirjoittaa paikan käsin.</p>
+        <button id="repeatPrompt" class="button speaker" aria-label="Toista ohje">🔊 Toista ohje</button>
+      </div>
+
+      <div class="camera-card card">
+        <video id="cameraPreview" playsinline muted></video>
+        <canvas id="snapshotCanvas" hidden></canvas>
+        <div id="cameraPlaceholder" class="camera-placeholder">Kamera ei ole käytössä.</div>
+        <div class="camera-actions">
+          <button id="openCamera" class="button primary">Avaa kamera</button>
+          <button id="scanLocation" class="button secondary" disabled>Lue QR / viivakoodi</button>
+          <button id="recordVideo" class="button record" disabled>● Aloita videoleike</button>
+          <button id="takeSnapshot" class="button secondary" disabled>Ota raporttikuva</button>
+        </div>
+        <p id="cameraStatus" class="muted small">Avaa kamera ennen kuvaamista.</p>
+      </div>
+
+      <div id="answerArea" class="card answer-card"></div>
+      <div class="guided-nav">
+        <button id="previousStep" class="button secondary">← Edellinen</button>
+        <button id="nextStep" class="button primary">Seuraava →</button>
+      </div>
+    </section>
+
+    <section id="reviewView" class="view" aria-labelledby="reviewTitle">
+      <button class="back-link" data-go="guidedView">← Muokkaa havaintoa</button>
+      <div class="card">
+        <p class="eyebrow">TARKASTAJAN VAHVISTUS</p>
+        <h2 id="reviewTitle">Tarkista havainto</h2>
+        <p class="muted">Raporttiin tallennetaan vain tässä näkymässä hyväksytyt tiedot.</p>
+        <div id="reviewContent"></div>
+        <div class="review-actions">
+          <button id="saveObservation" class="button primary large">Hyväksy ja tallenna havainto</button>
+          <button id="discardObservation" class="button danger">Hylkää havainto</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <template id="optionTemplate"><button type="button" class="option-button"></button></template>
+  <script src="app.js"></script>
+</body>
+</html>
